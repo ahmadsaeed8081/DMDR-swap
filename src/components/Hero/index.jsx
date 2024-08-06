@@ -4,6 +4,7 @@ import Button from "../Button";
 import { LiaAngleDownSolid } from "react-icons/lia";
 import Decimal from "decimal.js";
 import { useLocation } from 'react-router-dom';
+import moment from "moment";
 
 import Web3 from "web3";
 import {
@@ -216,7 +217,7 @@ const Hero = (props) => {
     set_Du_price_in_usdt(Du_price_in_usdt)
     set_orderHistory(orderHistory)
     set_owner(owner)
-    alert("jbkj")
+    // alert("jbkj")
     // setLoader(false)
 
   }
