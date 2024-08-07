@@ -849,6 +849,9 @@ const Hero = (props) => {
                                   <th className=" tw-font-poppins tw-text-lg tw-text-black tw-font-bold tw-px-6 tw-py-4">
                                     Status
                                   </th>
+                                  <th className=" tw-font-poppins tw-text-lg tw-text-black tw-font-bold tw-px-6 tw-py-4">
+                                    
+                                  </th>
                                 </tr>
                               </thead>
 
