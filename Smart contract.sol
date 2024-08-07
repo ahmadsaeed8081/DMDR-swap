@@ -2,17 +2,16 @@
 
 pragma solidity ^0.8.0;
 
-import "./proxiable.sol";
 
 interface Token 
     {
         function transfer(address to, uint tokens) external returns (bool success);
-        function transferFrom(address sender, address recipient, uint256 amount) external returns (bool) ;
+        function transferFrom(address sender, address recipient, uint256 amount) external;
         function balanceOf(address account) external view returns (uint256);
         function allowance(address owner, address spender) external view returns (uint256);
     }
 
-contract Du_Swap is Proxiable
+contract DMDR_Swap 
     {
 
         struct order_data{
@@ -45,7 +44,7 @@ contract Du_Swap is Proxiable
 
         uint[] public pending_orders_arr;
 
-        uint public  Du_price_in_usdt;
+        uint public  dmdr_price_in_usdt;
         uint public ref_percentage;
         uint public Minimum_withdraw_limit;
         uint public total_orders;
@@ -54,18 +53,18 @@ contract Du_Swap is Proxiable
 
 
         address public owner;
-        address public DU_address;
+        address public dmdr_address;
         address public usdt_address;
         uint public fee;
         
-        uint Total_usdt_to_du;
-        uint Total_du_to_usdt;
+        uint Total_usdt_to_dmdr;
+        uint Total_dmdr_to_usdt;
 
-        uint public  baseVal_usdt_to_du;
-        uint public baseVal_du_to_usdt;
+        uint public  baseVal_usdt_to_dmdr;
+        uint public baseVal_dmdr_to_usdt;
 
         uint[] public success_orders_arr;
-        uint public Du_sell_price;
+        uint public dmdr_sell_price;
 
 
     modifier onlyOwner() {
@@ -78,14 +77,14 @@ contract Du_Swap is Proxiable
             require(owner == address(0), "Already initalized");
             require(!initalized, "Already initalized");
             owner = msg.sender;
-            DU_address=0xe298eD3543B45037A2D4037ac6dfeB2E801f9803;
+            dmdr_address=0xe298eD3543B45037A2D4037ac6dfeB2E801f9803;
             usdt_address=0x55d398326f99059fF775485246999027B3197955;
-            Du_price_in_usdt = 0.07 ether;   
+            dmdr_price_in_usdt = 0.07 ether;   
             ref_percentage= 1 ether;
             Minimum_withdraw_limit = 100 ether;
             fee=0.05 ether;
-            baseVal_usdt_to_du=1000 ether;
-            baseVal_du_to_usdt=100 ether;
+            baseVal_usdt_to_dmdr=1000 ether;
+            baseVal_dmdr_to_usdt=100 ether;
             initalized = true;
 
         }
@@ -95,20 +94,20 @@ contract Du_Swap is Proxiable
         {
             if(add==usdt_address)
             {
-               return  (amount *1 ether)/ Du_price_in_usdt ;
+               return  (amount *1 ether)/ dmdr_price_in_usdt ;
             }
             else
             {
-                return  (amount * Du_sell_price)/1 ether;
+                return  (amount * dmdr_sell_price)/1 ether;
             }
 
          }
         
 
 
-        function du_to_usdt( uint amount, address _ref) external 
+        function dmdr_to_usdt( uint amount, address _ref) external 
         {
-            require(Token(DU_address).allowance(msg.sender,address(this))>=amount,"allowance issue");
+            require(Token(dmdr_address).allowance(msg.sender,address(this))>=amount,"allowance issue");
             uint fee_temp = (amount * fee) / 100 ether;
             orders[total_orders].order_no = total_orders;
             orders[total_orders].fee = fee_temp;
@@ -116,15 +115,15 @@ contract Du_Swap is Proxiable
             orders[total_orders].in_Amount=amount-fee_temp;
             orders[total_orders].userAddress=msg.sender;
 
-            orders[total_orders].out_Amount = check_recieving_Amount(DU_address,amount-fee_temp);
-            orders[total_orders].in_TokenAddress = DU_address;
+            orders[total_orders].out_Amount = check_recieving_Amount(dmdr_address,amount-fee_temp);
+            orders[total_orders].in_TokenAddress = dmdr_address;
 
             orders[total_orders].orderPlacingTime=block.timestamp;
             pending_orders_arr.push(total_orders);
             user[msg.sender].orders_array.push(total_orders);
 
             total_orders++;
-            Total_du_to_usdt+=amount;
+            Total_dmdr_to_usdt+=amount;
  
 
             if(_ref!=address(0) || _ref!=msg.sender)
@@ -135,12 +134,12 @@ contract Du_Swap is Proxiable
 
             }
                 
-            Token(DU_address).transferFrom(msg.sender,address(this),amount);
+            Token(dmdr_address).transferFrom(msg.sender,address(this),amount);
 
         }
 
 
-        function usdt_to_du(uint amount,address _ref) external 
+        function usdt_to_dmdr(uint amount,address _ref) external 
         {
             require(Token(usdt_address).allowance(msg.sender,address(this))>=amount,"allowance issue");
             
@@ -158,7 +157,7 @@ contract Du_Swap is Proxiable
             orders[total_orders].orderPlacingTime=block.timestamp;
             orders[total_orders].decision=1;                        
             user[msg.sender].orders_array.push(total_orders);
-            Total_usdt_to_du+=amount;
+            Total_usdt_to_dmdr+=amount;
 
 
 
@@ -172,7 +171,7 @@ contract Du_Swap is Proxiable
             }
 
             Token(usdt_address).transferFrom(msg.sender,address(this),amount);
-            Token(DU_address).transfer(msg.sender,temp_amount);
+            Token(dmdr_address).transfer(msg.sender,temp_amount);
 
             total_orders++;
 
@@ -247,14 +246,14 @@ contract Du_Swap is Proxiable
             {
                 uint amount = orders[num].out_Amount;
                 address tokenAddress = orders[num].in_TokenAddress;
-                if(tokenAddress==DU_address)
+                if(tokenAddress==dmdr_address)
                 {
                     Token(usdt_address).transfer(orders[num].userAddress,amount);
 
                 }
                 else if(tokenAddress==usdt_address)
                 {
-                    Token(DU_address).transfer(orders[num].userAddress,amount);
+                    Token(dmdr_address).transfer(orders[num].userAddress,amount);
 
                 }
                 success_orders_arr.push(pending_orders_arr[index_no]);
@@ -296,7 +295,7 @@ contract Du_Swap is Proxiable
         {
             require(user[msg.sender].Ref_earning >= Minimum_withdraw_limit);
 
-            Token(DU_address).transfer(msg.sender,user[msg.sender].Ref_earning);
+            Token(dmdr_address).transfer(msg.sender,user[msg.sender].Ref_earning);
             user[msg.sender].Ref_earning = 0;
 
         }
@@ -305,12 +304,12 @@ contract Du_Swap is Proxiable
 
         //withdraw functions
 
-        function withdrawdu(uint _amount) onlyOwner public
+        function withdrawdmdr(uint _amount) onlyOwner public
         {
-            uint bal = Token(DU_address).balanceOf(address(this));
+            uint bal = Token(dmdr_address).balanceOf(address(this));
             require(bal>=_amount,"you dont have funds");
 
-            Token(DU_address).transfer(owner,_amount); 
+            Token(dmdr_address).transfer(owner,_amount); 
         }
         function withdrawUsdt(uint _amount) onlyOwner  public
         {
@@ -320,14 +319,14 @@ contract Du_Swap is Proxiable
             Token(usdt_address).transfer(owner,_amount); 
         }
                
-        function get_usdt_to_du() public view returns(uint)
+        function get_usdt_to_dmdr() public view returns(uint)
         {
-            return baseVal_usdt_to_du + Total_usdt_to_du;
+            return baseVal_usdt_to_dmdr + Total_usdt_to_dmdr;
         } 
         
-        function get_du_to_usdt()  public view returns(uint)
+        function get_dmdr_to_usdt()  public view returns(uint)
         {
-            return baseVal_du_to_usdt + Total_du_to_usdt;
+            return baseVal_dmdr_to_usdt + Total_dmdr_to_usdt;
         } 
         
         function get_orderData(uint i)  public view returns(order_data memory)
@@ -426,14 +425,14 @@ contract Du_Swap is Proxiable
             owner = payable(_owner);
         }
         
-        function update_Du_Price(uint val) onlyOwner public
+        function update_dmdr_Price(uint val) onlyOwner public
         {
-            Du_price_in_usdt = val;
+            dmdr_price_in_usdt = val;
         }
         
-        function update_DuSell_Price(uint val) onlyOwner public
+        function update_dmdrSell_Price(uint val) onlyOwner public
         {
-            Du_sell_price = val;
+            dmdr_sell_price = val;
         }
 
         function update_ref_percentage(uint val) onlyOwner  public
@@ -451,20 +450,14 @@ contract Du_Swap is Proxiable
             fee = val;
         } 
         
-        function update_baseVal_usdt_to_du(uint val) onlyOwner public
+        function update_baseVal_usdt_to_dmdr(uint val) onlyOwner public
         {
-            baseVal_usdt_to_du = val;
+            baseVal_usdt_to_dmdr = val;
         } 
         
-        function update_update_baseVal_du_to_usdt(uint val) onlyOwner public
+        function update_update_baseVal_dmdr_to_usdt(uint val) onlyOwner public
         {
-            baseVal_du_to_usdt = val;
+            baseVal_dmdr_to_usdt = val;
         } 
-
-        function updateCode(address newCode) onlyOwner public 
-        {
-            updateCodeAddress(newCode);
-        }
-
 
     } 

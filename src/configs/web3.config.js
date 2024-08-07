@@ -1,5 +1,5 @@
 import { http, createConfig } from 'wagmi'
-import { optimism, mainnet, sepolia } from 'wagmi/chains'
+import { mainnet, polygon } from 'wagmi/chains'
 import { defaultWagmiConfig } from "@web3modal/wagmi/react/config";
 import { createWeb3Modal } from "@web3modal/wagmi/react";
 import { createClient } from 'viem'
@@ -14,7 +14,7 @@ const metadata = {
 };
 
 export const config = defaultWagmiConfig({
-    chains: process.env.REACT_APP_ENV == "production" ? [mainnet] : [sepolia],
+    chains: process.env.REACT_APP_ENV == "production" ? [mainnet] : [polygon],
     projectId,
     metadata
 });

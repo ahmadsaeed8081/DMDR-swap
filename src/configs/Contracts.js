@@ -1,7 +1,7 @@
 
-export const cont_address="0x30cb5E4E7b49c0e5b825617EB97c53DD1B001313"; 
-export const usdt_Address="0x55d398326f99059fF775485246999027B3197955";
-export const dmdr_address="0xe298eD3543B45037A2D4037ac6dfeB2E801f9803";
+export const cont_address="0x82C81a0Fc0de5A20E6027Def94Ebc921318B2165"; 
+export const usdt_Address="0x341343568948459e5b7017eDDb05110cfA3EF699";
+export const dmdr_address="0xE8aff75862Ac5408a467533631dDdb38A5521C78";
 
 export const cont_abi=[
 	{
@@ -66,14 +66,7 @@ export const cont_abi=[
 				"type": "address"
 			}
 		],
-		"name": "du_to_usdt",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "initialize",
+		"name": "dmdr_to_usdt",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -121,6 +114,11 @@ export const cont_abi=[
 		"type": "function"
 	},
 	{
+		"inputs": [],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
 		"inputs": [
 			{
 				"internalType": "uint256",
@@ -128,7 +126,7 @@ export const cont_abi=[
 				"type": "uint256"
 			}
 		],
-		"name": "update_baseVal_usdt_to_du",
+		"name": "update_baseVal_usdt_to_dmdr",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -141,7 +139,7 @@ export const cont_abi=[
 				"type": "uint256"
 			}
 		],
-		"name": "update_Du_Price",
+		"name": "update_dmdr_Price",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -154,7 +152,7 @@ export const cont_abi=[
 				"type": "uint256"
 			}
 		],
-		"name": "update_DuSell_Price",
+		"name": "update_dmdrSell_Price",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -206,20 +204,7 @@ export const cont_abi=[
 				"type": "uint256"
 			}
 		],
-		"name": "update_update_baseVal_du_to_usdt",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "newCode",
-				"type": "address"
-			}
-		],
-		"name": "updateCode",
+		"name": "update_update_baseVal_dmdr_to_usdt",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -237,7 +222,7 @@ export const cont_abi=[
 				"type": "address"
 			}
 		],
-		"name": "usdt_to_du",
+		"name": "usdt_to_dmdr",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -257,7 +242,7 @@ export const cont_abi=[
 				"type": "uint256"
 			}
 		],
-		"name": "withdrawdu",
+		"name": "withdrawdmdr",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -277,7 +262,7 @@ export const cont_abi=[
 	},
 	{
 		"inputs": [],
-		"name": "baseVal_du_to_usdt",
+		"name": "baseVal_dmdr_to_usdt",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -290,7 +275,7 @@ export const cont_abi=[
 	},
 	{
 		"inputs": [],
-		"name": "baseVal_usdt_to_du",
+		"name": "baseVal_usdt_to_dmdr",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -303,7 +288,7 @@ export const cont_abi=[
 	},
 	{
 		"inputs": [],
-		"name": "DU_address",
+		"name": "dmdr_address",
 		"outputs": [
 			{
 				"internalType": "address",
@@ -316,7 +301,7 @@ export const cont_abi=[
 	},
 	{
 		"inputs": [],
-		"name": "Du_price_in_usdt",
+		"name": "dmdr_price_in_usdt",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -329,7 +314,7 @@ export const cont_abi=[
 	},
 	{
 		"inputs": [],
-		"name": "Du_sell_price",
+		"name": "dmdr_sell_price",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -405,7 +390,7 @@ export const cont_abi=[
 						"type": "uint256"
 					}
 				],
-				"internalType": "struct Du_Swap.order_data[]",
+				"internalType": "struct DMDR_Swap.order_data[]",
 				"name": "order",
 				"type": "tuple[]"
 			}
@@ -465,7 +450,7 @@ export const cont_abi=[
 						"type": "uint256"
 					}
 				],
-				"internalType": "struct Du_Swap.order_data[]",
+				"internalType": "struct DMDR_Swap.order_data[]",
 				"name": "order",
 				"type": "tuple[]"
 			}
@@ -488,7 +473,7 @@ export const cont_abi=[
 	},
 	{
 		"inputs": [],
-		"name": "get_du_to_usdt",
+		"name": "get_dmdr_to_usdt",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -557,7 +542,7 @@ export const cont_abi=[
 						"type": "uint256"
 					}
 				],
-				"internalType": "struct Du_Swap.order_data",
+				"internalType": "struct DMDR_Swap.order_data",
 				"name": "",
 				"type": "tuple"
 			}
@@ -586,7 +571,7 @@ export const cont_abi=[
 	},
 	{
 		"inputs": [],
-		"name": "get_usdt_to_du",
+		"name": "get_usdt_to_dmdr",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -649,7 +634,7 @@ export const cont_abi=[
 						"type": "uint256"
 					}
 				],
-				"internalType": "struct Du_Swap.order_data[]",
+				"internalType": "struct DMDR_Swap.order_data[]",
 				"name": "order",
 				"type": "tuple[]"
 			}
@@ -713,19 +698,6 @@ export const cont_abi=[
 			}
 		],
 		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "proxiableUUID",
-		"outputs": [
-			{
-				"internalType": "bytes32",
-				"name": "",
-				"type": "bytes32"
-			}
-		],
-		"stateMutability": "pure",
 		"type": "function"
 	},
 	{

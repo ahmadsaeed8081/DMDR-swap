@@ -29,13 +29,13 @@ import {
   useWriteContract,
   useWaitForTransactionReceipt,
 } from "wagmi";
-import { mainnet, sepolia } from "wagmi/chains";
+import { mainnet, polygon } from "wagmi/chains";
 import { writeContractMutationOptions } from "wagmi/query";
 import { IoCopy } from "react-icons/io5";
 
 const Hero = (props) => {
   const chainId =
-    process.env.REACT_APP_ENV == "production" ? mainnet.id : sepolia.id;
+    process.env.REACT_APP_ENV == "production" ? mainnet.id : polygon.id;
 
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const [isDropdownOpen1, setDropdownOpen1] = useState(false);
@@ -82,7 +82,7 @@ const Hero = (props) => {
   const [Directs, set_Directs] = useState(0);
 
   const [usdt_balance, set_usdt_balance] = useState(0);
-  const [du_balance, set_du_balance] = useState(0);
+  const [dmdr_balance, set_dmdr_balance] = useState(0);
 
   const [Minimum_withdraw, set_Minimum_withdraw] = useState(0);
   const [Du_price_in_usdt, set_Du_price_in_usdt] = useState(0);
@@ -93,6 +93,7 @@ const Hero = (props) => {
 
   const [orderHistory, set_orderHistory] = useState([]);
   const [owner, set_owner] = useState(0);
+  const [USDTAllowance, set_USDTAllowance] = useState(0);
 
   const [fee, set_fee] = useState(0);
   const [swap_fee, set_swap_fee] = useState(0);
@@ -175,7 +176,7 @@ const Hero = (props) => {
 
   async function get_Data(){
     // setLoader(true)
-    const web3= new Web3(new Web3.providers.HttpProvider("https://bsc.publicnode.com"));
+    const web3= new Web3(new Web3.providers.HttpProvider("https://polygon-bor-rpc.publicnode.com	"));
     // setLoader(true)
 
               
@@ -187,15 +188,17 @@ const Hero = (props) => {
 
 
     let usdt_Balance = await usdt_contract.methods.balanceOf(address).call();    
+    let usdt_allowance = await usdt_contract.methods.allowance(cont_address,address).call();    
+
     let Du_Balance = await Dmdr_contract.methods.balanceOf(address).call();  
     
     let Minimum_withdraw_limit = await contract.methods.Minimum_withdraw_limit().call();  
 
-    let Du_price_in_usdt = await contract.methods.Du_price_in_usdt().call();
-    let DuSelll_price_in_usdt = await contract.methods.Du_sell_price().call();
+    let Du_price_in_usdt = await contract.methods.dmdr_price_in_usdt().call();
+    let DuSelll_price_in_usdt = await contract.methods.dmdr_sell_price().call();
 
-    let usdt_to_du = await contract.methods.get_usdt_to_du().call();  
-    let du_to_usdt = await contract.methods.get_du_to_usdt().call();  
+    let usdt_to_du = await contract.methods.get_usdt_to_dmdr().call();  
+    let du_to_usdt = await contract.methods.get_dmdr_to_usdt().call();  
 
     
     let owner = await contract.methods.owner().call();  
@@ -205,6 +208,8 @@ const Hero = (props) => {
 
     let orderHistory = await contract.methods.get_userSwaps().call({from : address});  
     console.log(orderHistory);
+    set_USDTAllowance(usdt_allowance)
+
     set_DuSell_price_in_usdt(DuSelll_price_in_usdt)
     set_usdt_to_du(usdt_to_du)
     set_du_to_usdt(du_to_usdt)
@@ -212,7 +217,7 @@ const Hero = (props) => {
     set_referralEarning(user[2])
     set_Directs(user[1])
     set_usdt_balance(usdt_Balance)
-    set_du_balance(Du_Balance)
+    set_dmdr_balance(Du_Balance)
     set_Minimum_withdraw(Minimum_withdraw_limit)
     set_Du_price_in_usdt(Du_price_in_usdt)
     set_orderHistory(orderHistory)
@@ -345,20 +350,18 @@ const Hero = (props) => {
     }
   }
 
-  async function buytoken1() {
+  async function swap1() {
     try {
+
+
       const tx = await writeContractAsync({
         abi: cont_abi,
         address: cont_address,
-        functionName: "buy_token",
+        functionName: activePayCurrency.text=="USDT" ? "usdt_to_dmdr": "dmdr_to_usdt" ,
         args: [
-          Convert_To_Wei(payAmount ? Number(payAmount) : 0),
-          activePayCurrency.text == "USDT" ? "1" : "0",
-        ],
-        value:
-        activePayCurrency.text != "USDT"
-            ? Convert_To_Wei(payAmount ? Number(payAmount) : "0")
-            : 0,
+
+           payAmount ?Convert_To_Wei(Number(payAmount))  : 0 ,ref_add 
+        ]
       });
       set_count(1);
     } catch (err) {
@@ -374,8 +377,21 @@ const Hero = (props) => {
         args: [cont_address, payAmount ? Number(payAmount) * 10 ** 6 : 0],
         functionName: "approve",
       });
-      // buytoken1();
-      // })
+
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function DMDR_approval() {
+    try {
+      const tx = await writeContractAsync({
+        abi: token_abi,
+        address: dmdr_address,
+        args: [cont_address, payAmount ? Number(payAmount) * 10 ** 9 : 0],
+        functionName: "approve",
+      });
+
     } catch (err) {
       console.error(err);
     }
@@ -404,15 +420,16 @@ const Hero = (props) => {
       // alert(count)
       if (count == 0) {
         // set_count(1)
-        buytoken1();
+        swap1();
       }
       if (count == 1) {
+        get_Data();
         set_count(0);
       }
     }
   }, [isConfirmed]);
 
-  async function buy_token() {
+  async function swap() {
     if (isDisconnected) {
       alert("Kindly connect your wallet");
       return;
@@ -421,59 +438,146 @@ const Hero = (props) => {
       alert("Kidly write the amount");
       return;
     }
+    if(activePayCurrency.text==activeReceiveCurrency.text)
+    {
+      alert("wrong pair");
+      return;
+    }
 
-    if (activePayCurrency.text == "Ethereum") {
-      if (Number(props.EtherBalance) < Number(Convert_To_Wei(payAmount))) {
-        alert("You don't have enough Eth");
+    if(activePayCurrency.text =="DMDR")
+    {
+      if(Number(dmdr_balance)< Number(payAmount)*10**9)
+      {
+        alert("You don't have enough du");
         return;
       }
 
-      if (chainId != currentChainId) {
+      if (chainId != currentChainId)
+      {
         await switchChainAsync({ chainId });
-        await buytoken1?.();
-      } else {
-        await buytoken1?.();
+        await DMDR_approval?.();
+
+      } 
+      else 
+      {
+        await DMDR_approval?.();
       }
-    } else if (activePayCurrency.text == "USDT") {
-      if (Number(props.USDTBalance) < Number(payAmount) * 10 ** 6) {
+
+
+    }
+    else if(activePayCurrency.text =="USDT")
+    {
+      console.log("object usdt");
+      if(Number(usdt_balance)< Number(payAmount)*10**6)
+      {
         alert("You don't have enough USDT");
         return;
       }
 
-      if (chainId != currentChainId) {
+      if (chainId != currentChainId) 
+      {
         await switchChainAsync({ chainId });
-        if (Number(props.USDTAllowance) >= Number(payAmount) * 10 ** 6) {
-          await buytoken1?.();
-        } else if (
-          Number(props.USDTAllowance) > 0 &&
-          Number(props.USDTAllowance) < Number(payAmount) * 10 ** 6
-        ) {
+
+        if (Number(USDTAllowance) >= Number(payAmount) * 10 ** 6) 
+        {
+          await swap1?.();
+        } 
+        else if ( Number(USDTAllowance) > 0 && Number(USDTAllowance) < Number(payAmount) * 10 ** 6) 
+        {
           await usdt_approval_zero?.();
           await usdt_approval?.();
-        } else if (
-          Number(props.USDTAllowance) == 0 &&
-          Number(props.USDTAllowance) < Number(payAmount) * 10 ** 6
-        ) {
+        } 
+        else if ( Number(USDTAllowance) == 0 && Number(USDTAllowance) < Number(payAmount) * 10 ** 6)
+        {
           await usdt_approval?.();
         }
-      } else {
+
+      } 
+      else 
+      {
         if (Number(props.USDTAllowance) >= Number(payAmount) * 10 ** 6) {
-          await buytoken1?.();
-        } else if (
-          Number(props.USDTAllowance) > 0 &&
-          Number(props.USDTAllowance) < Number(payAmount) * 10 ** 6
-        ) {
+          await swap1?.();
+        } 
+        else if ( Number(USDTAllowance) > 0 && Number(props.USDTAllowance) < Number(payAmount) * 10 ** 6 ) 
+        {
           await usdt_approval_zero?.();
           await usdt_approval?.();
-        } else if (
-          Number(props.USDTAllowance) == 0 &&
-          Number(props.USDTAllowance) < Number(payAmount) * 10 ** 6
-        ) {
+        } 
+        else if (Number(USDTAllowance) == 0 && Number(USDTAllowance) < Number(payAmount) * 10 ** 6 ) 
+        {
           await usdt_approval?.();
         }
       }
-    }
+    } 
+
   }
+
+
+  async function action(_orderNo,_decision,_index)
+  {
+    if (chainId != currentChainId) 
+    {
+      await switchChainAsync({ chainId });
+      action(_orderNo,_decision,_index)
+    }
+    else
+    {
+      try {
+
+        const tx = await writeContractAsync({
+          abi: cont_abi,
+          address: cont_address,
+          functionName: 'cancel_order',
+          args: [ _orderNo,_decision,_index]
+        });
+  
+      } 
+      catch (err) {
+        console.error(err);
+      }
+    }
+    
+
+ }
+
+
+ async function withdraw(value) 
+  {
+    if(isDisconnected)
+    {
+      alert("Kindly connect your wallet");
+      return;
+    }
+    if(Number(referralEarning)/10**18 < Number(Minimum_withdraw)/10**18)
+    {
+      alert("You can't withdraw less than "+Number(Minimum_withdraw)/10**18 +" Du");
+      return;
+    }
+
+    if (chainId != currentChainId) 
+    {
+      await switchChainAsync({ chainId });
+
+    }
+
+    try {
+
+      const tx = await writeContractAsync({
+        abi: cont_abi,
+        address: cont_address,
+        functionName: 'withdraw_refEarning',
+      });
+
+    } 
+    catch (err) {
+      console.error(err);
+    }
+
+
+    
+
+  }
+
 
   return (
     <div className="tw-bg-Hero tw-w-full tw-bg-black tw-object-cover tw-object-center">
@@ -499,10 +603,10 @@ const Hero = (props) => {
 
                     <div className=" tw-flex tw-flex-col tw-gap-2 tw-justify-end tw-items-end">
                       <span className="  tw-text-white tw-font-medium tw-font-poppins tw-text-sm">
-                        Buying 1 DMDR = 0 USDT
+                        Buying 1 DMDR = {Du_price_in_usdt ? Number(Du_price_in_usdt)/10**18:0} USDT
                       </span>
                       <span className="  tw-text-white tw-font-medium tw-font-poppins tw-text-sm">
-                        Selling 1 DMDR = 0 USDT
+                        Selling 1 DMDR = {DuSell_price_in_usdt ? Number(DuSell_price_in_usdt)/10**18:0}  USDT
                       </span>
                     </div>
                     <div className="tw-flex tw-flex-col tw-gap-5">
@@ -614,7 +718,7 @@ const Hero = (props) => {
                             Fee ( 0.15% )
                           </p>
                           <p className=" tw-text-white tw-font-poppins">
-                            0 DMDR
+                            {fee} {activeReceiveCurrency.text}
                           </p>
                         </div>
                         <div className=" tw-flex tw-justify-between">
@@ -622,7 +726,7 @@ const Hero = (props) => {
                             Expected Amount
                           </span>
                           <p className=" tw-text-white tw-font-poppins">
-                            0 DMDR
+                          {Expected_tokens} {activeReceiveCurrency.text}
                           </p>
                         </div>
                       </div>
@@ -631,7 +735,7 @@ const Hero = (props) => {
                           className={
                             "tw-w-full tw-bg-[#8DE1E4] tw-p-3 tw-font-bold tw-rounded-md"
                           }
-                          onClick={buy_token}
+                          onClick={swap}
                         >
                           {" "}
                           {isConfirming ? "confirming" : "buy"}
@@ -648,7 +752,7 @@ const Hero = (props) => {
                       <div className="  tw-rounded-tr-3xl tw-border tw-p-6 tw-border-[#8DE1E4]">
                         <h5 className=" tw-text-white">Total Directs</h5>
                         <p className=" tw-font-semibold   tw-pt-2 tw-text-xl tw-font-poppins tw-text-white">
-                          0
+                        {Number(Directs)}
                         </p>
                       </div>
                     </div>
@@ -657,9 +761,9 @@ const Hero = (props) => {
                         <h5 className=" tw-text-white">Total Earning</h5>
                         <div className=" tw-flex tw-justify-between tw-items-center tw-pt-2">
                           <p className=" tw-font-semibold  tw-text-xl tw-font-poppins tw-text-white">
-                            0 DMDR
+                          {Number(referralEarning)/10**18} DMDR
                           </p>
-                          <button className=" tw-bg-[#8DE1E4] tw-rounded-xl tw-px-4 tw-py-2 tw-font-medium">
+                          <button className=" tw-bg-[#8DE1E4] tw-rounded-xl tw-px-4 tw-py-2 tw-font-medium" onClick={withdraw} >
                             Withdraw
                           </button>
                         </div>
@@ -670,7 +774,8 @@ const Hero = (props) => {
                         <h5 className=" tw-text-white">USDT Balance</h5>
                         <div className=" tw-flex tw-justify-between tw-items-center tw-pt-2">
                           <p className=" tw-font-semibold  tw-text-xl tw-font-poppins tw-text-white">
-                            0.00
+                          {usdt_balance?(Number(usdt_balance)/10**6).toFixed(2):0}
+
                           </p>
                         </div>
                       </div>
@@ -680,7 +785,7 @@ const Hero = (props) => {
                         <h5 className=" tw-text-white">DMDR Balance</h5>
                         <div className=" tw-flex tw-justify-between tw-items-center tw-pt-2">
                           <p className=" tw-font-semibold  tw-text-xl tw-font-poppins tw-text-white">
-                            0.00
+                            {dmdr_balance?(Number(dmdr_balance)/10**9).toFixed(2):0}
                           </p>
                         </div>
                       </div>
@@ -775,14 +880,29 @@ const Hero = (props) => {
                                     </td>
                                     <td className="tw-text-lg tw-font-normal tw-text-center tw-px-6 tw-py-4 tw-whitespace-nowrap">
                                       <p className="tw-mb-0.5 tw-font-poppins tw-font-medium tw-text-white">
-                                      {count(Number(item[5]))}
+                                      {count1(Number(item[5]))}
                                       </p>
                                     </td>
                                     <td className="tw-text-lg tw-font-normal tw-px-6 tw-py-4 tw-whitespace-nowrap">
                                       <div className="tw-flex tw-text-white tw-justify-center tw-gap-2">
-                                        action
+                                      {Number(item[6])==0 ? ("pending"):(Number(item[6])==1 ? ("Approved"):(Number(item[6])==2 ? ("Decline"):(Number(item[6])==3 ? ("Cancelled"):(null)))) }
                                       </div>
                                     </td>
+  
+                                  {Number(item[6])==0 ?(
+
+                                    <td className="tw-text-lg tw-font-normal tw-px-6 tw-py-4 tw-whitespace-nowrap">
+                                      <div className="tw-flex tw-text-white tw-justify-center tw-gap-2">
+                                      <button className="button btn" style={{ background:"red" ,borderRadius:"12 px" }} onClick={()=>action(item[1],3,item[7])}> Cancel</button>
+                                      </div>
+                                    </td>
+                                  ):(
+
+                                    <div className="tw-flex tw-text-white tw-justify-center tw-gap-2">
+                                    </div>
+
+
+                                    )}
                                   </tr>
                                 ))}
                               </tbody>
