@@ -269,14 +269,14 @@ const Hero = (props) => {
      let dec_price= new Decimal(price);
      value=new Decimal(value)
       let temp=dec_price.times(value);
-      set_receiveAmount(Number(temp).toFixed(2));
+      set_receiveAmount(Number(temp).toFixed(4));
 
      let dec_temp= new Decimal(Number(temp))
      let dec_fees=new Decimal(Number(swap_fee))
      let fees=dec_temp.times(dec_fees)
       const result = fees.div(100);
-      set_fee(Number(result).toFixed(2))
-      set_Expected_tokens((Number(temp)  - (Number(result.toDecimalPlaces(2)))).toFixed(2))
+      set_fee(Number(result).toFixed(4))
+      set_Expected_tokens((Number(temp)  - (Number(result))).toFixed(4))
 
     }
     else if(activeReceiveCurrency.text == "DMDR" ||activePayCurrency.text == "USDT")
@@ -289,15 +289,15 @@ const Hero = (props) => {
       value=new Decimal(value)
        let temp=value.div(dec_price);
 
-      set_receiveAmount(Number(temp).toFixed(2));
+      set_receiveAmount(Number(temp).toFixed(4));
 
       let dec_temp= new Decimal(Number(temp))
       let dec_fees=new Decimal(Number(swap_fee))
       let fees=dec_temp.times(dec_fees)
        const result = fees.div(100);
-       set_fee(Number(result).toFixed(2))
+       set_fee(Number(result).toFixed(4))
 
-       set_Expected_tokens((Number(temp)  - (Number(result.toDecimalPlaces(2)))).toFixed(2))
+       set_Expected_tokens((Number(temp)  - (Number(result))).toFixed(4))
 
     }
     
@@ -322,15 +322,15 @@ const Hero = (props) => {
       value=new Decimal(value)
        let temp=value.div(dec_price);
 
-      set_payAmount(Number(temp).toFixed(2));
+      set_payAmount(Number(temp).toFixed(4));
 
       let dec_temp= new Decimal(Number(temp))
       let dec_fees=new Decimal(Number(swap_fee))
-      let fees=dec_temp.times(dec_fees)
+      let fees=value.times(dec_fees)
        const result = fees.div(100);
-       set_fee(Number(result).toFixed(2))
+       set_fee(Number(result).toFixed(4))
 
-       set_Expected_tokens((Number(temp)  - (Number(result.toDecimalPlaces(2)))).toFixed(2))
+       set_Expected_tokens((Number(value)  - (Number(result)).toFixed(4)))
     
     }
     else if(activeReceiveCurrency.text == "DMDR" ||activePayCurrency.text == "USDT")
@@ -339,14 +339,14 @@ const Hero = (props) => {
       let dec_price= new Decimal(price);
       value=new Decimal(value)
        let temp=dec_price.times(value);
-       set_payAmount(Number(temp).toFixed(2));
+       set_payAmount(Number(temp).toFixed(4));
  
       let dec_temp= new Decimal(Number(temp))
       let dec_fees=new Decimal(Number(swap_fee))
-      let fees=dec_temp.times(dec_fees)
+      let fees=value.times(dec_fees)
        const result = fees.div(100);
-       set_fee(Number(result).toFixed(2))
-       set_Expected_tokens((Number(temp)  - (Number(result.toDecimalPlaces(2)))).toFixed(2))
+       set_fee(Number(result).toFixed(4))
+       set_Expected_tokens((Number(value)  - (Number(result))).toFixed(4))
     }
   }
 
@@ -738,7 +738,7 @@ const Hero = (props) => {
                           onClick={swap}
                         >
                           {" "}
-                          {isConfirming ? "confirming" : "buy"}
+                          {isConfirming ? "confirming" : "Swap"}
                         </button>
                       </div>
                     </div>

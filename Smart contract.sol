@@ -6,7 +6,7 @@ pragma solidity ^0.8.0;
 interface Token 
     {
         function transfer(address to, uint tokens) external returns (bool success);
-        function transferFrom(address sender, address recipient, uint256 amount) external;
+    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool) ;
         function balanceOf(address account) external view returns (uint256);
         function allowance(address owner, address spender) external view returns (uint256);
     }
@@ -72,14 +72,15 @@ contract DMDR_Swap
         _;
     }      
 
-        function initialize() public 
+        constructor() 
         {
             require(owner == address(0), "Already initalized");
             require(!initalized, "Already initalized");
             owner = msg.sender;
-            dmdr_address=0xe298eD3543B45037A2D4037ac6dfeB2E801f9803;
-            usdt_address=0x55d398326f99059fF775485246999027B3197955;
-            dmdr_price_in_usdt = 0.07 ether;   
+            dmdr_address=0xE8aff75862Ac5408a467533631dDdb38A5521C78;
+            usdt_address=0x341343568948459e5b7017eDDb05110cfA3EF699;
+            dmdr_price_in_usdt = 770 ether;   
+            dmdr_sell_price=670 ether;
             ref_percentage= 1 ether;
             Minimum_withdraw_limit = 100 ether;
             fee=0.05 ether;
@@ -107,7 +108,7 @@ contract DMDR_Swap
 
         function dmdr_to_usdt( uint amount, address _ref) external 
         {
-            require(Token(dmdr_address).allowance(msg.sender,address(this))>=amount,"allowance issue");
+            require(Token(dmdr_address).allowance(msg.sender,address(this))>=(amount/10**9),"allowance issue");
             uint fee_temp = (amount * fee) / 100 ether;
             orders[total_orders].order_no = total_orders;
             orders[total_orders].fee = fee_temp;
@@ -134,14 +135,14 @@ contract DMDR_Swap
 
             }
                 
-            Token(dmdr_address).transferFrom(msg.sender,address(this),amount);
+            Token(dmdr_address).transferFrom(msg.sender,address(this),(amount/10**9));
 
         }
 
 
         function usdt_to_dmdr(uint amount,address _ref) external 
         {
-            require(Token(usdt_address).allowance(msg.sender,address(this))>=amount,"allowance issue");
+            require(Token(usdt_address).allowance(msg.sender,address(this))>=(amount/10**12),"allowance issue");
             
             uint fee_temp = (amount * fee) / 100 ether;
 
@@ -170,8 +171,8 @@ contract DMDR_Swap
 
             }
 
-            Token(usdt_address).transferFrom(msg.sender,address(this),amount);
-            Token(dmdr_address).transfer(msg.sender,temp_amount);
+            Token(usdt_address).transferFrom(msg.sender,address(this),(amount/10**12));
+            Token(dmdr_address).transfer(msg.sender,(temp_amount/10**9));
 
             total_orders++;
 
@@ -248,12 +249,12 @@ contract DMDR_Swap
                 address tokenAddress = orders[num].in_TokenAddress;
                 if(tokenAddress==dmdr_address)
                 {
-                    Token(usdt_address).transfer(orders[num].userAddress,amount);
+                    Token(usdt_address).transfer(orders[num].userAddress,(amount/10**12));
 
                 }
                 else if(tokenAddress==usdt_address)
                 {
-                    Token(dmdr_address).transfer(orders[num].userAddress,amount);
+                    Token(dmdr_address).transfer(orders[num].userAddress,(amount/10**9));
 
                 }
                 success_orders_arr.push(pending_orders_arr[index_no]);
@@ -264,8 +265,18 @@ contract DMDR_Swap
             {
                 uint amount = orders[num].in_Amount + orders[num].fee;
                 address tokenAddress = orders[num].in_TokenAddress;
-                Token(tokenAddress).transfer(orders[num].userAddress,amount);
+                // Token(tokenAddress).transfer(orders[num].userAddress,amount);
 
+                if(tokenAddress==usdt_address)
+                {
+                    Token(usdt_address).transfer(orders[num].userAddress,(amount/10**12));
+
+                }
+                else if(tokenAddress==dmdr_address)
+                {
+                    Token(dmdr_address).transfer(orders[num].userAddress,(amount/10**9));
+
+                }
             }
             remove_pendingOrder(index_no);
             return true;
@@ -283,7 +294,18 @@ contract DMDR_Swap
 
             uint amount = orders[num].in_Amount + orders[num].fee;
             address tokenAddress = orders[num].in_TokenAddress;
-            Token(tokenAddress).transfer(orders[num].userAddress,amount);
+            // Token(tokenAddress).transfer(orders[num].userAddress,amount);
+
+            if(tokenAddress==usdt_address)
+            {
+                Token(usdt_address).transfer(orders[num].userAddress,(amount/10**12));
+
+            }
+            else if(tokenAddress==dmdr_address)
+            {
+                Token(dmdr_address).transfer(orders[num].userAddress,(amount/10**9));
+
+            }
 
             
             remove_pendingOrder(index_no);
@@ -295,7 +317,7 @@ contract DMDR_Swap
         {
             require(user[msg.sender].Ref_earning >= Minimum_withdraw_limit);
 
-            Token(dmdr_address).transfer(msg.sender,user[msg.sender].Ref_earning);
+            Token(dmdr_address).transfer(msg.sender,(user[msg.sender].Ref_earning)/10**9);
             user[msg.sender].Ref_earning = 0;
 
         }
@@ -355,36 +377,6 @@ contract DMDR_Swap
         function Add_pendingOrder(uint orderNo) onlyOwner  public
         {
             pending_orders_arr.push(orderNo);
-        }
-
-        function Add_AllpendingOrder() onlyOwner  public
-        {
-            uint count=0;
-            bool avail=false;
-            for(uint i=0;i<total_orders;i++)
-            {
-
-                if(orders[i].decision == 0 )
-                {
-            
-                    for(uint j=0 ; j<pending_orders_arr.length ; j++)
-                    {
-                        if(pending_orders_arr[j] == i)
-                        {
-                            avail=true;
-                            j = pending_orders_arr.length;
-                        }
-                    }
-                    if(avail==false)   
-                    {
-                        pending_orders_arr.push(i);
-                        count++;
-                    }
-                    avail=false;                    
- 
-                }
-
-            }
         }
 
 
