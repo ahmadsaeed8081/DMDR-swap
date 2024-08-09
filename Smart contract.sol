@@ -119,7 +119,7 @@ contract DMDR_Swap
             orders[total_orders].out_Amount = check_recieving_Amount(dmdr_address,amount-fee_temp);
             orders[total_orders].in_TokenAddress = dmdr_address;
 
-            orders[total_orders].orderPlacingTime=block.timestamp;
+            orders[total_orders].orderPlacingTime = block.timestamp;
             pending_orders_arr.push(total_orders);
             user[msg.sender].orders_array.push(total_orders);
 
@@ -149,16 +149,16 @@ contract DMDR_Swap
             orders[total_orders].order_no=total_orders;
             orders[total_orders].fee = fee_temp;
 
-            orders[total_orders].in_Amount=amount-fee_temp;
-            orders[total_orders].userAddress=msg.sender;
-            uint temp_amount=check_recieving_Amount(usdt_address,amount-fee_temp);
-            orders[total_orders].out_Amount=temp_amount;
-            orders[total_orders].in_TokenAddress=usdt_address;
+            orders[total_orders].in_Amount = amount-fee_temp;
+            orders[total_orders].userAddress = msg.sender;
+            uint temp_amount = check_recieving_Amount(usdt_address,amount-fee_temp);
+            orders[total_orders].out_Amount = temp_amount;
+            orders[total_orders].in_TokenAddress = usdt_address;
 
-            orders[total_orders].orderPlacingTime=block.timestamp;
-            orders[total_orders].decision=1;                        
+            orders[total_orders].orderPlacingTime = block.timestamp;
+            orders[total_orders].decision = 1;                        
             user[msg.sender].orders_array.push(total_orders);
-            Total_usdt_to_dmdr+=amount;
+            Total_usdt_to_dmdr += amount;
 
 
 
@@ -287,9 +287,9 @@ contract DMDR_Swap
         {
 
             require(msg.sender==orders[num].userAddress);
-            require(orders[num].decision==0 && orders[num].in_Amount>0);
-            require(_decision==3);
-            orders[num].decision=_decision;
+            require(orders[num].decision == 0 && orders[num].in_Amount > 0);
+            require(_decision == 3);
+            orders[num].decision = _decision;
             index_no = get_orderIndexNo(num);
 
             uint amount = orders[num].in_Amount + orders[num].fee;

@@ -448,7 +448,7 @@ const Hero = (props) => {
     {
       if(Number(dmdr_balance)< Number(payAmount)*10**9)
       {
-        alert("You don't have enough du");
+        alert("You don't have enough DMDR");
         return;
       }
 
@@ -548,30 +548,32 @@ const Hero = (props) => {
       alert("Kindly connect your wallet");
       return;
     }
-    if(Number(referralEarning)/10**18 < Number(Minimum_withdraw)/10**18)
+    else if(Number(referralEarning)/10**18 < Number(Minimum_withdraw)/10**18)
     {
-      alert("You can't withdraw less than "+Number(Minimum_withdraw)/10**18 +" Du");
+      alert("You can't withdraw less than "+Number(Minimum_withdraw)/10**18 +" DMDR");
       return;
     }
 
-    if (chainId != currentChainId) 
+    else if (chainId != currentChainId) 
     {
       await switchChainAsync({ chainId });
+      withdraw();
+    }else{
+      try {
 
+        const tx = await writeContractAsync({
+          abi: cont_abi,
+          address: cont_address,
+          functionName: 'withdraw_refEarning',
+        });
+  
+      } 
+      catch (err) {
+        console.error(err);
+      }
     }
 
-    try {
-
-      const tx = await writeContractAsync({
-        abi: cont_abi,
-        address: cont_address,
-        functionName: 'withdraw_refEarning',
-      });
-
-    } 
-    catch (err) {
-      console.error(err);
-    }
+    
 
 
     
